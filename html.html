@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBD-II Amor Scanner Pro</title>
+    <style>
+        :root {
+            --rojo: #ff4d6d;
+            --rosado: #ffccd5;
+            --oscuro: #0f0202;
+            --gris-metal: #2d2d2d;
+            --plomo-auto: #8e8e8e;
+        }
+
+        body {
+            background-color: var(--oscuro);
+            color: var(--rosado);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* Estructura del Dispositivo Físico */
+        #scanner-case {
+            width: 95%;
+            max-width: 420px;
+            background: #333;
+            border: 10px solid #444;
+            border-radius: 40px;
+            padding: 15px;
+            box-shadow: 0 0 50px rgba(255, 77, 109, 0.2);
+            border-bottom: 25px solid #222;
+            position: relative;
+        }
+
+        #screen {
+            background: #000;
+            border-radius: 20px;
+            padding: 20px;
+            min-height: 550px;
+            border: 2px solid #1a1a1a;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Tipografías y Textos */
+        .header-ui {
+            color: var(--rojo);
+            text-align: center;
+            font-size: 0.8em;
+            letter-spacing: 2px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .alert-box {
+            border: 2px solid var(--rojo);
+            background: rgba(255, 77, 109, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .blink { animation: parpadeo 1s infinite; font-weight: bold; }
+        @keyframes parpadeo { 50% { opacity: 0.1; } }
+
+        /* Botones del Tablero */
+        .grid-menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn-modulo {
+            background: var(--gris-metal);
+            border: none;
+            border-bottom: 4px solid #111;
+            border-radius: 15px;
+            color: white;
+            padding: 20px 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn-modulo:active { transform: translateY(4px); border-bottom: none; }
+        .btn-modulo span { font-size: 2em; margin-bottom: 5px; }
+
+        /* Barras de Corazones Didácticas */
+        .heart-bar { color: var(--rojo); font-size: 1.2em; margin: 5px 0; letter-spacing: 3px; }
+        .data-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 12px;
+            margin: 10px 0;
+            border-left: 4px solid var(--rojo);
+        }
+
+        /* Overlay de Detalle */
+        #overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .car-anim {
+            font-size: 50px;
+            filter: grayscale(1) drop-shadow(0 0 5px var(--rojo));
+            margin: 10px 0;
+            display: inline-block;
+            animation: drive 3s infinite linear;
+        }
+
+        @keyframes drive { 0% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 100% { transform: translateX(-5px); } }
+
+        .btn-back {
+            background: var(--rojo);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: auto;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .hidden { display: none; }
+
+        /* Barra de carga inicial */
+        .loading-bar-bg { background: #111; height: 10px; border-radius: 5px; margin-top: 20px; overflow: hidden; }
+        .loading-bar-fill { background: var(--rojo); height: 100%; width: 0%; transition: width 0.1s; }
+    </style>
+</head>
+<body>
+
+<div id="scanner-case">
+    <div id="screen">
+        
+        <div id="ui-step-1">
+            <div class="header-ui">OBD-II DIAGNOSTICANDO</div>
+            <div class="alert-box">
+                <div class="blink" style="color: var(--rojo);">⚠️ CRITICO-ERROR DETECTADO</div>
+                <p style="font-size: 0.8em; margin-top: 10px;">
+                    Código: 026-FEBRERO <br>
+                    FALLA Y DETECCION DE ENOJOS Y MALOS ENTENDIDOS.
+                </p>
+            </div>
+            <p style="font-size: 0.75em; text-align: center; color: var(--plomo-auto);">Se requiere mantenimiento preventivo
+                llegamos al 1er Mes ❤️📍.</p>
+            <button onclick="repararSistema()" style="width: 100%; margin-top: 80px; padding: 20px; background: var(--rojo); border: none; color: white; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px rgba(255, 77, 109, 0.4);">
+                INICIAR REPARACIÓN ❤️
+            </button>
+        </div>
+
+        <div id="ui-step-2" class="hidden" style="text-align: center; margin-top: 150px;">
+            <p id="load-label" style="font-size: 0.9em;">Escaneando errores...</p>
+            <div class="loading-bar-bg"><div id="load-fill" class="loading-bar-fill"></div></div>
+            <p style="font-size: 0.9em; color: #968e8e; margin-top: 10px;">HECHO POR: TU NOVIECITA JIJIJI ❤️TKM VIDAL MI AMORCITO</p>
+        </div>
+
+        <div id="ui-step-3" class="hidden">
+            <div class="header-ui">UNIDAD RESTAURADA - SERVICE OK</div>
+            <div style="text-align: center;"><div class="car-anim">🏎️</div></div>
+            
+            <div class="grid-menu">
+                <button class="btn-modulo" onclick="mostrarDetalle('motor')"><span>❤️</span>ESTADO</button>
+                <button class="btn-modulo" onclick="mostrarDetalle('reversa')"><span>📸</span>REVERSA</button>
+                <button class="btn-modulo" onclick="mostrarDetalle('gps')"><span>📍</span>RUTA</button>
+                <button class="btn-modulo" onclick="mostrarDetalle('turbo')"><span>🔥</span>TURBO</button>
+                <button class="btn-modulo" onclick="mostrarDetalle('log')"><span>📋</span>LOGS</button>
+                <button class="btn-modulo" onclick="mostrarDetalle('game')"><span>🎮</span>JUEGO</button>
+            </div>
+            <p style="text-align: center; font-size: 0.8em; margin-top: 25px; color: #645a5a;">KMs recorridos: 30 Días / 1 Mes FELIZ PRIMER MESSSS!! ❤️❤️❤️❤️ Te mando muchos besitoss gracias por tantas risas (muaaaaaa) </p>
+        </div>
+
+        <div id="overlay">
+            <div id="overlay-body"></div>
+            <button class="btn-back" onclick="cerrarDetalle()">EXIT</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let speedVal = 0;
+
+    function repararSistema() {
+        document.getElementById('ui-step-1').classList.add('hidden');
+        document.getElementById('ui-step-2').classList.remove('hidden');
+        
+        let fill = document.getElementById('load-fill');
+        let label = document.getElementById('load-label');
+        let val = 0;
+        
+        let it = setInterval(() => {
+            val += 2;
+            fill.style.width = val + "%";
+            
+            if(val == 30) label.innerText = "Limpiando inyectores de enojo...";
+            if(val == 60) label.innerText = "Cargando combustible (SENTIMIENTOS)...";
+            if(val == 90) label.innerText = "Sincronizando corazones...";
+            
+            if(val >= 100) {
+                clearInterval(it);
+                setTimeout(() => {
+                    document.getElementById('ui-step-2').classList.add('hidden');
+                    document.getElementById('ui-step-3').classList.remove('hidden');
+                }, 500);
+            }
+        }, 60);
+    }
+
+    function mostrarDetalle(tipo) {
+        const ov = document.getElementById('overlay');
+        const body = document.getElementById('overlay-body');
+        ov.style.display = 'flex';
+        
+        if(tipo === 'motor') {
+            body.innerHTML = `
+                <h3 style="color:var(--rojo)">Nivel del Sistema</h3>
+                <div class="data-card">
+                    <span style="font-size:0.7em">COMPRESIÓN DE AMOR</span>
+                    <div class="heart-bar">❤️❤️❤️❤️❤️</div>
+                </div>
+                <div class="data-card">
+                    <span style="font-size:0.7em">NIVEL DE PACIENCIA</span>
+                    <div class="heart-bar">❤️❤️❤️❤️<span style="opacity:0.2">❤️</span></div>
+                </div>
+                <div class="data-card">
+                    <span style="font-size:0.7em">GANAS DE VERTE (siempre)</span>
+                    <div class="heart-bar">❤️❤️❤️❤️❤️++</div>
+                </div>
+                <p style="font-size:0.8em; color:gray">Análisis: El motor está en su mejor momento.</p>`;
+        } else if(tipo === 'reversa') {
+            body.innerHTML = `
+                <h3 style="color:var(--rojo)">Cámara de Reversa</h3>
+                <div style="width:100%; height:280px; background:#111; border:1px solid #333; border-radius:15px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                    <img src="https://i.postimg.cc/SQWnP4Rm/IMG_20251119_WA0155(1).jpg" style="max-width:100%; max-height:100%; object-fit:contain;">
+                </div>
+                <p style="margin-top:15px; font-size:0.85em; text-align:center;">
+                    Mirando hacia atrás, cada kilómetro recorrido contigo y espero siga siendo así. ❤️
+                </p>`;
+        } else if(tipo === 'gps') {
+            body.innerHTML = `
+                <h3 style="color:var(--rojo)">Navegación GPS</h3>
+                <div class="data-card" style="text-align:left">
+                    <p>🚩 <b>Inicio:</b> 26-01-2026</p>
+                    <div style="border-left:2px solid var(--rojo); margin-left:10px; padding:10px;">❤️</div>
+                    <p>📍 <b>Punto Actual:</b> Primer Mes 26🚩</p>
+                    <div style="border-left:2px dashed #444; margin-left:10px; padding:10px;">🎁</div>
+                    <p style="color:#555">🏁 <b>Destino:</b> hasta donde tú decidas , pero sin hacernos daño😩😥</p>
+                </div>`;
+        } else if(tipo === 'turbo') {
+            body.innerHTML = `
+                <h3 style="color:var(--rojo)">Test de Potencia</h3>
+                <div style="text-align:center; padding:20px;">
+                    <div style="font-size:4em; animation: pulse 1s infinite">💓</div>
+                    <h2 style="margin:10px 0;">9999 RPM</h2>
+                    <p>Así late mi corazón cada vez que recibo un mensaje tuyo o te veo llegar.</p>
+                </div>`;
+        } else if(tipo === 'log') {
+            body.innerHTML = `
+                <h3 style="color:var(--rojo)">Bitácora de Servicio</h3>
+                <div style="text-align:left; font-family:monospace; font-size:0.75em; background:#111; padding:10px; border-radius:10px; height:280px; overflow-y:auto; border:1px solid #333;">
+                    <p style="color:#00ff00">[OK] 26/01: Motor encendido.</p>
+                    <p style="color:var(--rosado)">[INFO] Primeras risas detectadas.</p>
+                    <p style="color:var(--rojo)">[WARN] Alerta: Exceso de ternura.</p>
+                    <p style="color:#00ff00">[OK] Ajuste de abrazos completado.</p>
+                    <p style="color:var(--plomo-auto)">[UPDATE] Parche "Primer Mes" 100%.</p>
+                    <p style="color:#00ff00">[OK] Conexión Vidal & Ingeniera establecida.</p>
+                    <p style="color:var(--rojo); margin-top:10px;"> > Sistema listo para el Mes 2...</p>
+                </div>`;
+        } else if(tipo === 'game') {
+            speedVal = 0;
+            body.innerHTML = `
+                <h3 style="color:var(--rojo)">Test de Aceleración</h3>
+                <p style="font-size:0.75em">¡Acelera para llegar a mi corazón!</p>
+                <div class="loading-bar-bg" style="height:30px; margin: 20px 0;">
+                    <div id="game-fill" class="loading-bar-fill" style="width:0%"></div>
+                </div>
+                <div style="text-align:center">
+                    <button onclick="acelerarMotor()" style="width:90px; height:90px; border-radius:50%; background:var(--rojo); border:none; color:white; font-weight:bold; cursor:pointer; box-shadow: 0 5px 0 #900;">GAS!</button>
+                    <h2 id="speed-counter" style="margin-top:15px; font-family:monospace;">0 KM/H</h2>
+                    <p id="game-msg" style="color:var(--rojo); font-weight:bold; min-height:25px;"></p>
+                </div>`;
+        }
+    }
+
+    function acelerarMotor() {
+        speedVal += 10;
+        if(speedVal > 100) speedVal = 100;
+        document.getElementById('game-fill').style.width = speedVal + "%";
+        document.getElementById('speed-counter').innerText = (speedVal * 3).toFixed(0) + " KM/H";
+        if(speedVal >= 100) {
+            document.getElementById('game-msg').innerText = "¡META ALCANZADA! ❤️ TE AMO";
+        }
+    }
+
+    function cerrarDetalle() {
+        document.getElementById('overlay').style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
